@@ -18,7 +18,7 @@ Stage0 += comment(__doc__.strip(), reformat=False)
 
 # Image recipe
 Stage0 += comment('Set the ubuntu version to 22.04.')
-Stage0 += baseimage(image='nvidia/cuda:12.0.0-devel-ubuntu20.04')
+Stage0 += baseimage(image='nvidia/cuda:12.0.0-devel-ubuntu22.04')
 
 Stage0 += comment('Install the required packages.')
 
@@ -27,17 +27,6 @@ Stage0 += gnu()
 # KNEM and XPMEM
 Stage0 += knem(ldconfig=True)
 Stage0 += xpmem(ldconfig=True)
-
-# UCX
-ucx = ucx(
-    version='1.17.0',
-    cuda=True,
-    knem="/usr/local/knem",
-    ldconfig=True,
-    ofed=True,
-    xpmem="/usr/local/xpmem",
-)
-Stage0 += ucx
 
 # Tools
 Stage0 += packages(
@@ -59,6 +48,7 @@ Stage0 += packages(
         'libgraphviz-dev',
         'libhwloc-dev',
         'libnuma-dev',
+        'librdmacm-dev',
         'libssl-dev',
         'ninja-build',
         'openssh-client',
@@ -67,6 +57,18 @@ Stage0 += packages(
         'wget',
     ],
 )
+
+
+# UCX
+ucx = ucx(
+    version='1.17.0',
+    cuda=True,
+    knem="/usr/local/knem",
+    ldconfig=True,
+    ofed=True,
+    xpmem="/usr/local/xpmem",
+)
+Stage0 += ucx
 
 # Python
 python = python(python2=False, devel=True)
