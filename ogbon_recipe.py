@@ -18,7 +18,7 @@ Stage0 += comment(__doc__.strip(), reformat=False)
 
 # Image recipe
 Stage0 += comment('Set the ubuntu version to 22.04.')
-Stage0 += baseimage(image='nvidia/cuda:12.0.76-devel-ubuntu22.04')
+Stage0 += baseimage(image='nvidia/cuda:12.0.0-devel-ubuntu22.04')
 
 Stage0 += comment('Install the required packages.')
 
