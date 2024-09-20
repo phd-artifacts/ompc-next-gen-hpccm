@@ -6,8 +6,8 @@ Contents:
   Ubuntu 22.04
   CMAKE 3.29.0
   OmpCluster LLVM
-  UCX 1.14.0
-  MPICH 4.2.0
+  UCX 1.17.0
+  MPICH 4.2.2
   TOOLS (git, ccache, wget, ninja-build, gdb)
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
@@ -18,7 +18,7 @@ Stage0 += comment(__doc__.strip(), reformat=False)
 
 # Image recipe
 Stage0 += comment('Set the ubuntu version to 22.04.')
-Stage0 += baseimage(image='nvidia/cuda:12.5.0-devel-ubuntu20.04')
+Stage0 += baseimage(image='nvidia/cuda:12.0.76-devel-ubuntu22.04')
 
 Stage0 += comment('Install the required packages.')
 
@@ -33,7 +33,7 @@ Stage0 += mlnx_ofed(ldconfig=True, version='5.4-1.0.3.0')
 
 # UCX
 ucx = ucx(
-    version='1.15.0',
+    version='1.17.0',
     cuda=True,
     knem="/usr/local/knem",
     ldconfig=True,
@@ -121,7 +121,7 @@ Stage0 += environment(
 
 # MPICH
 mpich = mpich(
-    version='4.2.0',
+    version='4.2.2',
     with_ucx='/usr/local/ucx',
     with_device='ch4:ucx',
 )
@@ -140,12 +140,19 @@ Stage0 += nsight_compute(version='2024.2.1')
 
 Stage0 += gnu(version=10)
 
+# Install OpenBlas/Lapack
+Stage0 += comment('OpenBLAS/Lapack installation')
+Stage0 += generic_cmake(cmake_opts=['-DCMAKE_BUILD_TYPE=Release',
+                                    '-DBUILD_SHARED_LIBS=ON'],
+                            url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz')
+
+
 # Compile LLVM
 Stage0 += comment('Compile LLVM')
 Stage0 += shell(commands= [
     'git clone --depth=1 -b offload-mpi-proxy-plugin https://github.com/cl3to/llvm-project /opt/llvm/llvm-project',
-    'cmake -S/opt/llvm/llvm-project/llvm -B/opt/llvm/builds/llvm-project/release -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/llvm/installs/offload-mpi-plugin/release -DLLVM_ENABLE_PROJECTS=clang -DLLVM_ENABLE_RUNTIMES="offload;openmp" -DLLVM_TARGETS_TO_BUILD="X86;NVPTX" -DCLANG_VENDOR=OmpCluster -DLIBOMPTARGET_ENABLE_DEBUG=1 -DLLVM_ENABLE_ASSERTIONS=On -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DLLVM_INCLUDE_BENCHMARKS=Off -DLIBOMPTARGET_ENABLE_PROFILER=1 -DOPENMP_STANDALONE_BUILD=0 -DLIBOMPTARGET_PLUGINS_TO_BUILD="mpiproxy;cuda;host" -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLLVM_USE_LINKER=gold -DLLVM_CCACHE_BUILD=OFF -DLIBOMPTARGET_DEVICE_ARCHITECTURES=sm_70 -DLIBOMPTARGET_REMOTE_PLUGINS_TO_BUILD=cuda -DOPENMP_ENABLE_LIBOMP_PROFILING=ON',
-    'cmake --build /opt/llvm/builds/llvm-project/release -j 15',
+    'cmake -S/opt/llvm/llvm-project/llvm -B/opt/llvm/builds/llvm-project/release -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/llvm/installs/offload-mpi-plugin/release -DLLVM_ENABLE_PROJECTS=clang -DLLVM_ENABLE_RUNTIMES="offload;openmp;libcxx;libcxxabi;libunwind" -DLLVM_TARGETS_TO_BUILD="X86" -DCLANG_VENDOR=OmpCluster -DLIBOMPTARGET_ENABLE_DEBUG=1 -DLLVM_ENABLE_ASSERTIONS=On -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DLLVM_INCLUDE_BENCHMARKS=Off -DLIBOMPTARGET_ENABLE_PROFILER=1 -DOPENMP_STANDALONE_BUILD=0 -DLIBOMPTARGET_PLUGINS_TO_BUILD="mpiproxy;host" -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLLVM_USE_LINKER=gold -DLLVM_CCACHE_BUILD=OFF -DLIBOMPTARGET_DEVICE_ARCHITECTURES=sm_70  -DOPENMP_ENABLE_LIBOMP_PROFILING=ON',
+    'cmake --build /opt/llvm/builds/llvm-project/release -j',
     'cmake --install /opt/llvm/builds/llvm-project/release --prefix /opt/llvm/installs/offload-mpi-plugin/release',
     'rm -rf /opt/llvm/builds',
     'rm -rf /opt/llvm/llvm-project',
