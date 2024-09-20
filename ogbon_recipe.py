@@ -18,7 +18,7 @@ Stage0 += comment(__doc__.strip(), reformat=False)
 
 # Image recipe
 Stage0 += comment('Set the ubuntu version to 22.04.')
-Stage0 += baseimage(image='nvidia/cuda:12.0.0-devel-ubuntu22.04')
+Stage0 += baseimage(image='nvidia/cuda:12.0.0-devel-ubuntu20.04')
 
 Stage0 += comment('Install the required packages.')
 
@@ -27,9 +27,6 @@ Stage0 += gnu()
 # KNEM and XPMEM
 Stage0 += knem(ldconfig=True)
 Stage0 += xpmem(ldconfig=True)
-
-# OFED
-Stage0 += mlnx_ofed(ldconfig=True, version='5.4-1.0.3.0')
 
 # UCX
 ucx = ucx(
@@ -87,18 +84,6 @@ Stage0 += pip(pip='pip3', packages=['numpy', 'matplotlib', 'findiff', 'gdown', '
 
 # CMAKE
 Stage0 += cmake(eula=True, version='3.29.0')
-
-# Add the HDF5 installation commands
-Stage0 += shell(commands=[
-    'mkdir /hdf5',
-    'cd /hdf5',
-    'gdown https://drive.google.com/uc?id=1AjD-3GX4wfjhgJ85uHZmKdDKLGY-AYbl',
-    'tar xf CMake-hdf5-1.14.3.tar.gz',
-    'cd CMake-hdf5-1.14.3',
-    './build-unix.sh',
-    'yes | ./HDF5-1.14.3-Linux.sh',
-    'cp -r HDF5-1.14.3-Linux/HDF_Group/HDF5/1.14.3/ ../build'
-])
 
 # LLVM
 llvm = llvm(
