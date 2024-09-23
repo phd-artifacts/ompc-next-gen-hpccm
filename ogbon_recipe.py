@@ -8,7 +8,7 @@ Contents:
   OmpCluster LLVM
   UCX 1.17.0
   MPICH 4.2.2
-  TOOLS (git, ccache, wget, ninja-build, gdb)
+  TOOLS (git, ccache, wget, ninja-build, gdb, zsh)
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
 # pylama: ignore=E0602
@@ -55,9 +55,9 @@ Stage0 += packages(
         'pdsh',
         'pkg-config',
         'wget',
+        'zsh',  # Added zsh to the list of tools
     ],
 )
-
 
 # UCX
 ucx = ucx(
@@ -129,34 +129,11 @@ Stage0 += gnu(version=10)
 
 # Install OpenBlas/Lapack
 Stage0 += comment('OpenBLAS/Lapack installation')
-Stage0 += generic_cmake(cmake_opts=['-DCMAKE_BUILD_TYPE=Release',
-                                    '-DBUILD_SHARED_LIBS=ON'],
-                            url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz')
-
-
-# Compile LLVM
-Stage0 += comment('Compile LLVM')
-Stage0 += shell(commands= [
-    'git clone --depth=1 -b offload-mpi-proxy-plugin https://github.com/cl3to/llvm-project /opt/llvm/llvm-project',
-    'cmake -S/opt/llvm/llvm-project/llvm -B/opt/llvm/builds/llvm-project/release -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/llvm/installs/offload-mpi-plugin/release -DLLVM_ENABLE_PROJECTS=clang -DLLVM_ENABLE_RUNTIMES="offload;openmp;libcxx;libcxxabi;libunwind" -DLLVM_TARGETS_TO_BUILD="X86" -DCLANG_VENDOR=OmpCluster -DLIBOMPTARGET_ENABLE_DEBUG=1 -DLLVM_ENABLE_ASSERTIONS=On -DCMAKE_EXPORT_COMPILE_COMMANDS=On -DLLVM_INCLUDE_BENCHMARKS=Off -DLIBOMPTARGET_ENABLE_PROFILER=1 -DOPENMP_STANDALONE_BUILD=0 -DLIBOMPTARGET_PLUGINS_TO_BUILD="mpiproxy;host" -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DLLVM_USE_LINKER=gold -DLLVM_CCACHE_BUILD=OFF -DLIBOMPTARGET_DEVICE_ARCHITECTURES=sm_70  -DOPENMP_ENABLE_LIBOMP_PROFILING=ON',
-    'cmake --build /opt/llvm/builds/llvm-project/release -j',
-    'cmake --install /opt/llvm/builds/llvm-project/release --prefix /opt/llvm/installs/offload-mpi-plugin/release',
-    'rm -rf /opt/llvm/builds',
-    'rm -rf /opt/llvm/llvm-project',
-    'export PATH=/opt/llvm/installs/offload-mpi-plugin/release/bin:$PATH',
-    'export LD_LIBRARY_PATH=/opt/llvm/installs/offload-mpi-plugin/release/lib/x86_64-unknown-linux-gnu:/opt/llvm/installs/offload-mpi-plugin/release/lib:$LD_LIBRARY_PATH',
-    'export LIBRARY_PATH=/opt/llvm/installs/offload-mpi-plugin/release/lib:$LIBRARY_PATH',
-    'export CPATH=$/opt/llvm/installs/offload-mpi-plugin/release/lib/clang/*/include:$CPATH',
-    'export CC=clang',
-    'export CXX=clang++'
-])
-Stage0 += environment(
-    variables={
-        'CC': 'clang',
-        'CXX': 'clang++',
-        'PATH': '/opt/llvm/installs/offload-mpi-plugin/release/bin:$PATH',
-        'LD_LIBRARY_PATH': '/opt/llvm/installs/offload-mpi-plugin/release/lib/x86_64-unknown-linux-gnu:/opt/llvm/installs/offload-mpi-plugin/release/lib:$LD_LIBRARY_PATH',
-        'LIBRARY_PATH': '/opt/llvm/installs/offload-mpi-plugin/release/lib:$LIBRARY_PATH',
-        'CPATH':'$/opt/llvm/installs/offload-mpi-plugin/release/lib/clang/*/include:$CPATH'
-    }
+Stage0 += generic_cmake(
+    cmake_opts=[
+        '-DCMAKE_BUILD_TYPE=Release',
+        '-DBUILD_SHARED_LIBS=ON'
+    ],
+    url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz'
 )
+
