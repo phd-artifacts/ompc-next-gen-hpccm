@@ -20,6 +20,6 @@ hpccm --format docker --recipe ogbon_recipe.py > Dockerfile
 ```sh
 docker build . --tag localhost:5000/hpccm_tmp
 docker push localhost:5000/hpccm_tmp
-APPTAINER_NOHTTPS=1 APPTAINER_TMPDIR=.cache singularity pull --nohttps docker://localhost:5000/hpccm_tmp
+APPTAINER_NOHTTPS=1 APPTAINER_TMPDIR=$(realpath .cache) singularity pull docker://localhost:5000/hpccm_tmp
 ```
 
