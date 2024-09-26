@@ -37,6 +37,7 @@ Stage0 += packages(
         'ca-certificates',
         'ccache',
         'gdb',
+        'gdbserver',
         'gfortran',
         'git',
         'gnupg',
