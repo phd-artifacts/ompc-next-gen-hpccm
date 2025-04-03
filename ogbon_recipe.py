@@ -46,6 +46,8 @@ Stage0 += packages(
         'libelf-dev',
         'libfabric-dev',
         'libglib2.0-dev',
+        'liburing',
+        'liburing-dev',
         'libgraphviz-dev',
         'libhwloc-dev',
         'libnuma-dev',
