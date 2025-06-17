@@ -131,12 +131,12 @@ Stage0 += nsight_compute(version='2024.2.1')
 Stage0 += gnu(version=10)
 
 # Install OpenBlas/Lapack
-Stage0 += comment('OpenBLAS/Lapack installation')
-Stage0 += generic_cmake(
-    cmake_opts=[
-        '-DCMAKE_BUILD_TYPE=Release',
-        '-DBUILD_SHARED_LIBS=ON'
-    ],
-    url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz'
-)
+#Stage0 += comment('OpenBLAS/Lapack installation')
+#Stage0 += generic_cmake(
+#    cmake_opts=[
+#        '-DCMAKE_BUILD_TYPE=Release',
+#        '-DBUILD_SHARED_LIBS=ON'
+#    ],
+#    url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz'
+#)
 
