@@ -51,6 +51,7 @@ Stage0 += packages(
         'libhwloc-dev',
         'libnuma-dev',
         'librdmacm-dev',
+        'liburing-dev',
         'libssl-dev',
         'ninja-build',
         'openssh-client',
