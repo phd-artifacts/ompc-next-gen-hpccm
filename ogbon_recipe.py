@@ -12,6 +12,11 @@ Contents:
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
 # pylama: ignore=E0602
+from hpccm.building_blocks import (apt_get, packages, gnu, knem, xpmem, ucx,
+                                   python, pip, cmake, llvm, mpich,
+                                   nsight_systems, nsight_compute)
+from hpccm.primitives import baseimage, comment, environment
+
 
 # add docstring to Dockerfile
 Stage0 += comment(__doc__.strip(), reformat=False)
@@ -62,6 +67,37 @@ Stage0 += packages(
         'zsh',  # Added zsh to the list of tools
     ],
 )
+
+# ROCm repository prerequisites
+Stage0 += packages(ospackages=[
+    'wget', 'gnupg', 'lsb-release', 'ca-certificates'
+])
+
+# Pin ROCm repository to ensure correct package versions
+Stage0 += shell(commands=[
+    'printf "Package: *\\nPin: origin \"repo.radeon.com\"\\nPin-Priority: 600\\n" > /etc/apt/preferences.d/rocm-pin'
+])
+
+# Install ROCm and development tools using the official repository
+Stage0 += apt_get(
+    ospackages=[
+        'rocm-dev',
+        'rocm-utils',
+        'rocm-llvm',
+        'hip-runtime-amd',
+        'rocm-device-libs',
+    ],
+    keys=['https://repo.radeon.com/rocm/rocm.gpg.key'],
+    repositories=['deb [arch=amd64 signed-by=/usr/share/keyrings/rocm.gpg.gpg] https://repo.radeon.com/rocm/apt/5.7 jammy main']
+)
+
+# Optional: set env vars
+Stage0 += environment(variables={
+    'ROCM_PATH': '/opt/rocm',
+    'HIP_PATH': '/opt/rocm/hip',
+    'PATH': '/opt/rocm/bin:/opt/rocm/llvm/bin:$PATH',
+    'LD_LIBRARY_PATH': '/opt/rocm/lib:/opt/rocm/lib64:$LD_LIBRARY_PATH'
+})
 
 # UCX
 ucx = ucx(
@@ -140,4 +176,5 @@ Stage0 += gnu(version=10)
 #    ],
 #    url='https://github.com/xianyi/OpenBLAS/releases/download/v0.3.20/OpenBLAS-0.3.20.tar.gz'
 #)
+
 
